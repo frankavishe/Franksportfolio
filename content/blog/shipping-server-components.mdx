@@ -1,0 +1,48 @@
+---
+title: "What Actually Changes When You Adopt Server Components"
+date: "2026-02-10"
+excerpt: "React Server Components aren't just 'less JS' — they change where your data layer lives. Here's what surprised me on a real migration."
+tags: ["Next.js", "React", "Architecture"]
+---
+
+When we moved our dashboard from a client-rendered SPA to the Next.js App Router, the biggest win
+wasn't the bundle size — it was deleting an entire layer of client-side data fetching code.
+
+## The old shape
+
+Most of our components looked like this:
+
+```tsx
+function ProjectList() {
+  const { data, isLoading } = useQuery(["projects"], fetchProjects);
+
+  if (isLoading) return <Spinner />;
+  return data.map((p) => <ProjectCard key={p.id} project={p} />);
+}
+```
+
+Every list needed a loading state, an error state, and a cache key to keep in sync.
+
+## The new shape
+
+With Server Components, the fetch just... happens where the component is:
+
+```tsx
+async function ProjectList() {
+  const projects = await getProjects();
+  return projects.map((p) => <ProjectCard key={p.id} project={p} />);
+}
+```
+
+No `useEffect`, no loading spinner component, no client-side waterfall. The `<Suspense>` boundary
+above it handles the loading state declaratively.
+
+## What actually got harder
+
+- **Mental model for "use client"**: every interactive leaf (forms, toggles, anything with `useState`)
+  needs an explicit boundary, and it's easy to mark a whole subtree client-side by accident.
+- **Passing data across the boundary**: props from a Server Component into a Client Component must be
+  serializable — no functions, no class instances.
+
+If you're migrating, start with the leaf nodes (cards, buttons) as Client Components and keep the data
+fetching as high up the tree as possible. That single rule avoided most of our headaches.

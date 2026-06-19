@@ -1,0 +1,51 @@
+---
+title: "Cutting Our Deploy Time From 40 Minutes to 4"
+date: "2025-11-05"
+excerpt: "Most of our CI time wasn't building or testing — it was waiting. A look at the pipeline changes that actually moved the needle."
+tags: ["DevOps", "CI/CD", "GitHub Actions"]
+---
+
+When a deploy takes 40 minutes, engineers stop deploying small changes — they batch them, which makes
+every deploy riskier. Fixing the pipeline was a reliability fix disguised as a speed fix.
+
+## Where the time actually went
+
+We assumed the bottleneck was the build. It wasn't:
+
+| Stage              | Before | After |
+| ------------------- | ------ | ----- |
+| Install deps        | 6 min  | 45s   |
+| Test suite          | 22 min | 3 min |
+| Build + deploy       | 12 min | 50s   |
+
+## Caching dependencies properly
+
+```yaml
+- uses: actions/cache@v4
+  with:
+    path: ~/.npm
+    key: npm-${{ hashFiles('package-lock.json') }}
+```
+
+This single change took dependency install from 6 minutes to under a minute on cache hits.
+
+## Parallelizing the test suite
+
+The test suite was the real culprit — it ran as one serial job. Splitting it across shards by file
+hash and running them as a matrix job took it from 22 minutes to 3:
+
+```yaml
+strategy:
+  matrix:
+    shard: [1, 2, 3, 4, 5, 6, 7, 8]
+steps:
+  - run: npx jest --shard=${{ matrix.shard }}/8
+```
+
+## The unglamorous part: rollback
+
+None of this matters if a bad deploy can't be undone quickly. We added an automated rollback that
+re-deploys the last known-good build the moment health checks fail post-deploy, with no human in the
+loop required to stop the bleeding.
+
+The result: engineers started shipping multiple small deploys a day instead of one big one a week.

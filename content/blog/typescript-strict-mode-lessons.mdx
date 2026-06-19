@@ -1,0 +1,40 @@
+---
+title: "Turning On TypeScript Strict Mode Six Months In"
+date: "2026-01-22"
+excerpt: "We shipped a 60k-line codebase without strict mode, then flipped the switch. Here's the triage process that made it survivable."
+tags: ["TypeScript", "Engineering"]
+---
+
+Flipping `"strict": true` on an existing codebase doesn't fail loudly in one place — it fails
+*everywhere*, all at once, in `tsc`'s error output. Here's the order we tackled it in.
+
+## 1. `noImplicitAny` first
+
+This catches the highest-value bugs: function parameters and return values with no type, often the
+root cause of "it worked until someone passed the wrong shape."
+
+```ts
+// Before: silently accepts anything
+function applyDiscount(price, percent) {
+  return price - price * (percent / 100);
+}
+
+// After: the compiler catches misuse at call sites
+function applyDiscount(price: number, percent: number): number {
+  return price - price * (percent / 100);
+}
+```
+
+## 2. `strictNullChecks` second
+
+This is the painful one — every `.find()`, every optional chain, every API response needs an explicit
+null check. We didn't try to fix all of it; we used targeted `// @ts-expect-error` comments with a
+linked ticket number, then burned down the list over a few sprints.
+
+## 3. Don't fix everything in the same PR
+
+The reviewers on our team flagged this fast: a 400-file diff that's "just adding types" is impossible
+to review carefully. We split it by directory and shipped one strict-mode PR per feature area.
+
+The payoff showed up about a month later — production bugs caused by shape mismatches between our API
+and frontend dropped to nearly zero.

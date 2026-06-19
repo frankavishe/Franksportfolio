@@ -1,8 +1,16 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8fafc;
+  --foreground: #020617;
+}
+
+.dark {
+  --background: #020617;
+  --foreground: #e2e8f0;
 }
 
 @theme inline {
@@ -10,17 +18,57 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Cosmic Win palette */
+  --color-space-void: #020617;
+  --color-space-deep: #0f172a;
+  --color-win-blue: #2563eb;
+  --color-win-blue-light: #3b82f6;
+  --color-trophy-cyan: #06b6d4;
+  --color-trophy-cyan-light: #38bdf8;
+  --color-champ-gold: #eab308;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+::selection {
+  background: var(--color-win-blue);
+  color: white;
+}
+
+/* Accessibility override: disables motion/physics when toggled */
+.motion-frozen *,
+.motion-frozen *::before,
+.motion-frozen *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Prism token colors for MDX code blocks, tuned to the Cosmic Win palette */
+pre[class*="language-"] {
+  background: var(--color-space-deep);
+  border: 1px solid color-mix(in srgb, var(--color-win-blue) 25%, transparent);
+  border-radius: 0.75rem;
+}
+.token.comment { color: #64748b; }
+.token.keyword,
+.token.tag { color: var(--color-win-blue-light); }
+.token.string,
+.token.attr-value { color: var(--color-champ-gold); }
+.token.function,
+.token.class-name { color: var(--color-trophy-cyan-light); }
+.token.number,
+.token.boolean { color: var(--color-champ-gold); }
+.token.punctuation,
+.token.operator { color: #94a3b8; }
+.code-highlight .code-line.line-highlighted {
+  background: color-mix(in srgb, var(--color-win-blue) 15%, transparent);
+  border-left: 2px solid var(--color-trophy-cyan-light);
 }
