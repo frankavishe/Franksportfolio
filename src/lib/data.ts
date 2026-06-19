@@ -32,7 +32,8 @@ export const projects: Project[] = [
   {
     slug: "xy",
     title: "xy",
-    description: "Full-stack application with a NestJS backend and an HTML, CSS, and JavaScript frontend.",
+    description:
+      "Full-stack application with a NestJS backend and an HTML, CSS, and JavaScript frontend.",
     tags: ["NestJS", "HTML", "CSS", "JavaScript"],
     category: "Full Stack",
     repoUrl: "https://github.com/frankavishe/xy",
@@ -41,7 +42,8 @@ export const projects: Project[] = [
   {
     slug: "franks-portfolio",
     title: "Frank's Portfolio",
-    description: "Personal portfolio site built with Next.js, TypeScript, and Tailwind CSS.",
+    description:
+      "Personal portfolio site built with Next.js, TypeScript, and Tailwind CSS.",
     tags: ["Next.js", "TypeScript", "Tailwind CSS"],
     category: "Frontend",
     repoUrl: "https://github.com/frankavishe/Franksportfolio",
@@ -63,9 +65,7 @@ export const experience: ExperienceEntry[] = [
     title: "Full Stack Developer",
     start: "May 2026",
     end: "Present",
-    bullets: [
-      "Full-stack development across the company's product line.",
-    ],
+    bullets: ["Full-stack development across the company's product line."],
   },
   {
     company: "Freelance",
